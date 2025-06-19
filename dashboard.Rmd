@@ -1,0 +1,223 @@
+---
+title: "Dashboard"
+output:
+  flexdashboard::flex_dashboard:
+    theme:
+      version: 4
+      bg: "#29343D"
+      fg: "#1E2025" 
+      primary: "#5A7480"
+      navbar-bg: "#3C5665"
+      base_font: 
+        google: Prompt
+      heading_font:
+        google: Sen
+      code_font:
+        google: 
+          # arguments to sass::font_google() 
+          family: JetBrains Mono
+          local: false
+---
+
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(knitr)
+library(DT)
+library(rpivotTable)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(openintro)
+library(highcharter)
+```
+
+
+```{r}
+data <- read.csv("C:/Users/WELCOME/Desktop/r_project/sales_data.csv")
+
+```
+
+
+
+
+Interactive Data Visualization
+==============================
+
+Row
+------------------------------
+
+### SuperMarket Sales Analysis
+```{r}
+valueBox(paste("Sales"),
+         color = "#3C5665")
+```
+### Total
+```{r}
+valueBox(length(data$City),
+         icon = "fa-user")
+```
+### Yangon
+```{r}
+valueBox(sum(data$City == "Yangon"),
+         icon = 'fa-city')
+
+```
+### Naypyitaw
+```{r}
+
+valueBox(sum(data$City == "Naypyitaw"),
+         icon = 'fa-city')
+
+```
+### Mandalay
+```{r}
+
+valueBox(sum(data$City == "Mandalay"),
+         icon = 'fa-city')
+
+```
+
+Row
+------------------------------
+```{r}
+sales_by_product <- data %>%
+  group_by(Product.line) %>%
+  summarise(total_sales = sum(Total))
+# Customize the theme and set the plot size
+ggplot(sales_by_product, aes(x = "", y = total_sales, fill = Product.line)) +
+  geom_bar(stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(title = "Sales by Product") +
+  theme_minimal() +
+  theme(panel.background = element_rect(fill = "#29343D"),
+        plot.background = element_rect(fill = "#3C5665")) +
+  theme(plot.title = element_text(size = 16),
+        axis.text = element_text(color = "white"),  # Set axis text color to white
+        axis.title = element_blank()) +  # Adjust title font size
+  theme(plot.margin = margin(2, 1, 1.35, 1.5, "cm"))  
+```
+
+```{r}
+avg_rating_by_city <- data %>%
+  group_by(City) %>%
+  summarise(avg_rating = mean(Rating))
+# Customize the theme
+ggplot(avg_rating_by_city, aes(x = City, y = avg_rating)) +
+  geom_bar(stat = "identity", fill = "#D09683") +
+  labs(x = "City", y = "Average Rating", title = "Average Rating by City") +
+  theme_minimal() +  # Change the theme to minimal
+  theme(
+    panel.background = element_rect(fill = "#29343D"),  
+    plot.background = element_rect(fill = "#3C5665"),   
+    axis.text.x = element_text(color = "white"),
+    axis.text.y = element_text(color = "white"),
+    axis.title = element_text(color = "white"),   
+    plot.title = element_text(size = 16),  
+    plot.margin = margin(3, 1, 1, 1, "cm") 
+  )
+```
+
+```{r}
+sales_gross_income <- data %>%
+  group_by(Product.line) %>%
+  summarise(total_sales = sum(Total), gross_income = sum(gross.income))
+# Customize the theme
+ggplot(sales_gross_income, aes(x = total_sales, y = gross_income)) +
+  geom_point(color = "orange") +
+  labs(x = "Total Sales", y = "Gross Income", title = "Sales vs. Gross Income") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "#29343D"),  
+    plot.background = element_rect(fill = "#3C5665"),   
+    axis.text.x = element_text(color = "white"), 
+    axis.text.y = element_text(color = "white"), 
+    axis.title = element_text(color = "white"),    
+  )
+```
+
+
+Row
+------------------------------
+
+
+
+```{r}
+sales_by_gender <- data %>%
+  group_by(Product.line, Gender) %>%
+  summarise(total_sales = sum(Total))
+# Customize the theme
+ggplot(sales_by_gender, aes(x = Product.line, y = total_sales, fill = Gender)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Product.line), vjust = -0.5, color = "white", size = 2) +  # Add labels
+  labs(x = "Product", y = "Total Sales", title = "Sales by Gender") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "#29343D"),  
+    plot.background = element_rect(fill = "#3C5665"),   
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(color = "white"),      
+    axis.title = element_text(color = "white"),   
+    plot.title = element_text(size = 16),  
+    plot.margin = margin(0.9, 1, 1, 1.64, "cm")      
+  )
+```
+
+```{r}
+sales_by_branch_product <- data %>%
+  group_by(Branch, Product.line) %>%
+  summarise(total_sales = sum(Total))
+# Customize the theme
+ggplot(sales_by_branch_product, aes(x = Branch, y = total_sales, fill = Product.line)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Branch", y = "Total Sales", title = "Sales by Branch and Product") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "#29343D"),  
+    plot.background = element_rect(fill = "#3C5665"),   
+    axis.text.x = element_text(color = "white"),  
+    axis.text.y = element_text(color = "white"), 
+    axis.title = element_text(color = "white"),  
+  )
+```
+
+```{r}
+
+top_payment_method <- data %>%
+  group_by(Payment) %>%
+  summarise(total_sales = sum(Total)) %>%
+  arrange(desc(total_sales)) %>%
+  top_n(5)
+
+# Customize the theme and set the plot size
+ggplot(top_payment_method, aes(x = "", y = total_sales, fill = Payment)) +
+  geom_bar(stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(title = "Top Payment Methods") +
+  theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "#29343D"), 
+    plot.background = element_rect(fill = "#3C5665"),  
+    axis.text = element_text(color = "white"),       
+    axis.title = element_blank(),                    
+    plot.title = element_text(size = 16),  
+    plot.margin = margin(0.9, 1, 1, 1.64, "cm")      
+  )
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
