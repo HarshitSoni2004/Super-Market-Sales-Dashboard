@@ -22,7 +22,7 @@ This project uses **`flexdashboard`**, **`ggplot2`**, **`dplyr`**, and **`plotly
 
 ---
 
-## 🛠 Technologies Used
+## Technologies Used
 
 - **R**
 - **Flexdashboard**
@@ -38,6 +38,8 @@ This project uses **`flexdashboard`**, **`ggplot2`**, **`dplyr`**, and **`plotly
 ## Project Structure
 
 ├── sales_data.csv
+
 ├── dashboard.Rmd # Main dashboard file
+
 └── README.md # Project documentation
 
